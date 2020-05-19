@@ -13,8 +13,7 @@ isJump = False
 jumpCount=10
 score=0
 lives=3
-#v=5
-#m=1
+
 clock = pygame.time.Clock()
 pygame.init()
 pygame.mixer.init()
@@ -26,7 +25,30 @@ def draw_text(surf,text,size,x,y):
     text_rect=text_surface.get_rect()
     text_rect.center=(x,y)
     surf.blit(text_surface,text_rect)
+class backg(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image=pygame.image.load('back.png').convert()
+        self.image.set_colorkey((0,0,0),pygame.RLEACCEL)
+        self.rect=self.image.get_rect()
+        self.rect.x=0
+        self.rect.y=450
 
+    def update(self):
+        self.rect.x-=10
+
+
+class backg1(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image=pygame.image.load('back.png').convert()
+        self.image.set_colorkey((135,205,250),pygame.RLEACCEL)
+        self.rect=self.image.get_rect()
+        self.rect.x=500
+        self.rect.y=450
+
+    def update(self):
+        self.rect.x-=10
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -37,12 +59,9 @@ class Enemy(pygame.sprite.Sprite):
                 )
             )
         self.rect.centerx = ((HEIGHT / 2)+(225))
-        self.rect.bottom =(HEIGHT - 1)    
+        self.rect.bottom =(HEIGHT - 50)    
         self.speed = random.randint(5, 6)
-        #self.speedx = random.randrange(-3 ,-3)
-        #self.rect.x = random.randrange(WIDTH - self.rect.width)
-        #self.rect.y= random.randrange(-90,-30)
-        #self.speedy = random.randrange(1,8)
+       
     def update(self):
         self.rect.move_ip(-self.speed, 0)
         if self.rect.right < 0:
@@ -61,10 +80,7 @@ class Coins(pygame.sprite.Sprite):
         self.rect.centerx = ((HEIGHT / 2)+200)
         self.rect.bottom =(HEIGHT - 180)    
         self.speed = random.randint(5, 6)
-        #self.speedx = random.randrange(-3 ,-3)
-        #self.rect.x = random.randrange(WIDTH - self.rect.width)
-        #self.rect.y= random.randrange(-90,-30)
-        #self.speedy = random.randrange(1,8)
+        
         
     def update(self):
         self.rect.move_ip(-self.speed, 0)
@@ -85,29 +101,19 @@ class Player(pygame.sprite.Sprite):
         self.index=0
         self.im=self.img[self.index]
         self.lives= lives
-  #      self.v=v
-   #     self.m=m
+ 
         self.isJump=isJump
         self.score=score
 
         self.rect.centery = WIDTH / 2
-        self.rect.bottom = HEIGHT - 1
+        self.rect.bottom = HEIGHT - 50
         self.jumpCount=jumpCount
         self.speedx = 0
 
     def update(self):
         self.speedx = 0
         keystate = pygame.key.get_pressed()
-        #if not(self.isJump):
-         #   if keystate[pygame.K_SPACE]:
-          #      self.isJump = True
-        #else:
-         #   if self.jumpCount >= -10:
-          #      player.rect.y -= ((self.jumpCount * abs(self.jumpCount)) * 0.5)
-           #     self.jumpCount -= 1
-            #else: # This will execute if our jump is finished
-             #   self.jumpCount = 10
-              #  self.isJump = False        
+         
 
         if keystate[pygame.K_LEFT]:
             self.speedx = -8
@@ -136,10 +142,16 @@ ADDCOIN = pygame.USEREVENT + 2
 pygame.time.set_timer(ADDCOIN,2500)
 enemy=Enemy()
 coins=Coins()
-all_sprites.add(player,enemy,coins)
+backg=backg()
+backg1=backg1()
+
+all_sprites.add(player,enemy,coins,backg,backg1)
 enemies= pygame.sprite.Group(enemy)
 players= pygame.sprite.Group(player)
 coin=pygame.sprite.Group(coins)
+backgs=pygame.sprite.Group(backg)
+backg1s=pygame.sprite.Group(backg1)
+
 
 
 
@@ -163,25 +175,7 @@ while running:
             coin.add(new_coin)
             all_sprites.add(new_coin)    
         
-    #keystate=pygame.key.get_pressed()        
-    #if isJump == False:
-     #       if keystate[pygame.K_SPACE]:
-      #          isJump = True
-    #if isJump:
-     #   F=((1/2)*m*(v**2))
-      #  player.rect.y -= F
-       # v=v-1
-       # if v < 0:
-        #    m = -1
-        #if v ==-6: 
    
-                # making isjump equal to false  
-         #   isjump = False
-    
-        
-                # setting original values to v and m 
-          #  v = 5
-           # m = 1    
     keystate = pygame.key.get_pressed()
     if not(player.isJump):
         if keystate[pygame.K_UP]:
@@ -191,7 +185,7 @@ while running:
             player.rect.y -= ((player.jumpCount * abs(player.jumpCount)) * 0.5)
             player.jumpCount -= 1
         else: 
-            player.rect.y = HEIGHT -60
+            player.rect.y = HEIGHT -115
             player.jumpCount=10
             player.isJump = False
     hits = pygame.sprite.spritecollide(player, enemies, False)
@@ -204,7 +198,10 @@ while running:
         player.score += 1
         print(player.score)
         running = True    
-    
+    if backg.rect.right<=0:
+        backg.rect.x=500
+    if backg1.rect.right<=0:
+        backg1.rect.x=500
     all_sprites.update()
     screen.fill((135,205,250))
     all_sprites.draw(screen)
