@@ -49,6 +49,26 @@ class backg1(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x-=10
+
+
+class Mobs(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('sss.png').convert()
+        self.image.set_colorkey((135,205,250),pygame.RLEACCEL)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width)
+        self.rect.y= random.randrange(-100,-40)
+        self.speedy = random.randrange(1,8)
+        self.speedx = random.randrange(-3, 3)
+    def update(self):
+        self.rect.y += self.speedy
+        self.rect.x += self.speedx
+        if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y= random.randrange(-100,-40)
+            self.speedy = random.randrange(1,8)
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -71,7 +91,7 @@ class Enemy(pygame.sprite.Sprite):
 class Coins(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image =pygame.image.load('immmm.png').convert()
+        self.image =pygame.image.load('cc.png').convert()
         self.image.set_colorkey((0,0,0),pygame.RLEACCEL)
         self.rect = self.image.get_rect(center=(random.randint(500 + 20, 500 + 100),
                 random.randint(0, 500),
@@ -144,14 +164,22 @@ enemy=Enemy()
 coins=Coins()
 backg=backg()
 backg1=backg1()
-
-all_sprites.add(player,enemy,coins,backg,backg1)
+mob=Mobs()
+all_sprites.add(player,enemy,coins,backg,backg1,mob)
 enemies= pygame.sprite.Group(enemy)
 players= pygame.sprite.Group(player)
 coin=pygame.sprite.Group(coins)
 backgs=pygame.sprite.Group(backg)
 backg1s=pygame.sprite.Group(backg1)
-
+mobs=pygame.sprite.Group()
+for i in range(8):
+    m=Mobs()
+    all_sprites.add(m)
+    mobs.add(m)
+for i in range(8):
+    c=Coins()
+    all_sprites.add(c)
+    coin.add(c)
 
 
 
@@ -204,6 +232,7 @@ while running:
         backg1.rect.x=500
     all_sprites.update()
     screen.fill((135,205,250))
+    
     all_sprites.draw(screen)
     draw_text(screen, "Score"+":"+str(player.score), 28, 70, 20)
     pygame.display.flip()
