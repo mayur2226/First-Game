@@ -2,7 +2,7 @@ import pygame
 import random
 WIDTH=500
 HEIGHT=500
-FPS=40
+FPS=60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -25,6 +25,10 @@ def draw_text(surf,text,size,x,y):
     text_rect=text_surface.get_rect()
     text_rect.center=(x,y)
     surf.blit(text_surface,text_rect)
+
+
+
+
 class backg(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -99,7 +103,7 @@ class Coins(pygame.sprite.Sprite):
             )
         self.rect.centerx = ((HEIGHT / 2)+200)
         self.rect.bottom =(HEIGHT - 180)    
-        self.speed = random.randint(5, 6)
+        self.speed = random.randint(5, 10)
         
         
     def update(self):
@@ -159,13 +163,17 @@ player = Player()
 ADDENEMY = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDENEMY,2500)
 ADDCOIN = pygame.USEREVENT + 2
-pygame.time.set_timer(ADDCOIN,2500)
+pygame.time.set_timer(ADDCOIN,2000)
+
 enemy=Enemy()
 coins=Coins()
 backg=backg()
 backg1=backg1()
 mob=Mobs()
+
 all_sprites.add(player,enemy,coins,backg,backg1,mob)
+
+
 enemies= pygame.sprite.Group(enemy)
 players= pygame.sprite.Group(player)
 coin=pygame.sprite.Group(coins)
@@ -201,7 +209,8 @@ while running:
         elif event.type == ADDCOIN:
             new_coin=Coins()
             coin.add(new_coin)
-            all_sprites.add(new_coin)    
+            all_sprites.add(new_coin)   
+            
         
    
     keystate = pygame.key.get_pressed()
@@ -219,22 +228,32 @@ while running:
     hits = pygame.sprite.spritecollide(player, enemies, False)
     
     if hits:
-        running=False
+        ##player.lives -= 1
+        #if player.lives > 0: 
+          #  running=True
+        #else:
+        
+        running=False    
+
     
     hits1 = pygame.sprite.spritecollide(player, coin, True)
     if hits1:
-        player.score += 1
+        player.score += 50
         print(player.score)
         running = True    
     if backg.rect.right<=0:
         backg.rect.x=500
     if backg1.rect.right<=0:
         backg1.rect.x=500
+
+    
+
     all_sprites.update()
     screen.fill((135,205,250))
     
     all_sprites.draw(screen)
     draw_text(screen, "Score"+":"+str(player.score), 28, 70, 20)
+    #draw_text(screen, "Lives"+":"+str(player.lives), 60, 100, 50)
     pygame.display.flip()
 
 pygame.quit()    
