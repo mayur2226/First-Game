@@ -2,7 +2,7 @@ import pygame
 import random
 WIDTH=500
 HEIGHT=500
-FPS=60
+FPS=30
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -12,8 +12,8 @@ YELLOW = (255, 255, 0)
 isJump = False
 jumpCount=10
 score=0
-lives=3
 
+lives=0
 clock = pygame.time.Clock()
 pygame.init()
 pygame.mixer.init()
@@ -25,9 +25,6 @@ def draw_text(surf,text,size,x,y):
     text_rect=text_surface.get_rect()
     text_rect.center=(x,y)
     surf.blit(text_surface,text_rect)
-
-
-
 
 class backg(pygame.sprite.Sprite):
     def __init__(self):
@@ -84,13 +81,31 @@ class Enemy(pygame.sprite.Sprite):
             )
         self.rect.centerx = ((HEIGHT / 2)+(225))
         self.rect.bottom =(HEIGHT - 50)    
-        self.speed = random.randint(5, 6)
+        self.speed = random.randint(2,4 )
        
     def update(self):
         self.rect.move_ip(-self.speed, 0)
         if self.rect.right < 0:
             self.kill()
-           
+
+class Bridge(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image =pygame.image.load('1.png').convert()
+        self.image.set_colorkey((0,0,0),pygame.RLEACCEL)
+        self.rect = self.image.get_rect(center=(random.randint(500 + 20, 500 + 100),
+                random.randint(0, 500),
+                )
+            )
+        self.rect.centerx = ((HEIGHT / 2)+200)
+        self.rect.bottom =(HEIGHT - 250)    
+        self.speed = random.randint(5, 10)
+        
+        
+    def update(self):
+        self.rect.move_ip(-self.speed, 0)
+        if self.rect.right < 0:
+            self.kill()               
 
 class Coins(pygame.sprite.Sprite):
     def __init__(self):
@@ -111,6 +126,10 @@ class Coins(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()    
 
+
+
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -128,7 +147,7 @@ class Player(pygame.sprite.Sprite):
  
         self.isJump=isJump
         self.score=score
-
+        self.rect.left= 10
         self.rect.centery = WIDTH / 2
         self.rect.bottom = HEIGHT - 50
         self.jumpCount=jumpCount
@@ -149,6 +168,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.right = WIDTH
         if self.rect.left < 0:
             self.rect.left = 0
+          
     def update1(self):        
         self.index += 1
         if self.index > len(self.img):
@@ -164,18 +184,21 @@ ADDENEMY = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDENEMY,2500)
 ADDCOIN = pygame.USEREVENT + 2
 pygame.time.set_timer(ADDCOIN,2000)
+ADDBRIDGE=pygame.USEREVENT + 3
+pygame.time.set_timer(ADDBRIDGE,5000)
 
 enemy=Enemy()
 coins=Coins()
 backg=backg()
 backg1=backg1()
 mob=Mobs()
-
-all_sprites.add(player,enemy,coins,backg,backg1,mob)
+bridge=Bridge()
+all_sprites.add(player,enemy,coins,backg,backg1,mob,bridge)
 
 
 enemies= pygame.sprite.Group(enemy)
 players= pygame.sprite.Group(player)
+bridges=pygame.sprite.Group(bridge)
 coin=pygame.sprite.Group(coins)
 backgs=pygame.sprite.Group(backg)
 backg1s=pygame.sprite.Group(backg1)
@@ -188,6 +211,10 @@ for i in range(8):
     c=Coins()
     all_sprites.add(c)
     coin.add(c)
+#for i in range(2):
+ #   b=Bridge()
+  #  all_sprites.add(b)
+   # bridges.add(b)
 
 
 
@@ -210,8 +237,23 @@ while running:
             new_coin=Coins()
             coin.add(new_coin)
             all_sprites.add(new_coin)   
+        elif event.type == ADDBRIDGE:
+            new_bridge=Bridge()
+            bridges.add(new_bridge)
+            all_sprites.add(new_bridge)       
             
-        
+    keystate = pygame.key.get_pressed()
+    if not(player.isJump):
+        if keystate[pygame.K_w]:
+            player.isJump = True
+    if player.isJump:
+        if player.jumpCount >= -10:
+            player.rect.y -= ((player.jumpCount * abs(player.jumpCount)) * 0.5)
+            player.jumpCount -= 1
+        else: 
+            player.rect.y = HEIGHT -115
+            player.jumpCount=10
+            player.isJump = False    
    
     keystate = pygame.key.get_pressed()
     if not(player.isJump):
@@ -226,26 +268,26 @@ while running:
             player.jumpCount=10
             player.isJump = False
     hits = pygame.sprite.spritecollide(player, enemies, False)
-    
+    hits2 = pygame.sprite.spritecollide(player, bridges, False)
     if hits:
-        ##player.lives -= 1
-        #if player.lives > 0: 
-          #  running=True
-        #else:
-        
         running=False    
-
+    if hits2:
+        running=False
     
     hits1 = pygame.sprite.spritecollide(player, coin, True)
     if hits1:
         player.score += 50
         print(player.score)
-        running = True    
+        running = True   
+   
     if backg.rect.right<=0:
         backg.rect.x=500
     if backg1.rect.right<=0:
         backg1.rect.x=500
-
+    if player.rect.right==WIDTH:
+        running=False
+    if player.rect.left == 0:
+        running=False     
     
 
     all_sprites.update()
@@ -253,7 +295,7 @@ while running:
     
     all_sprites.draw(screen)
     draw_text(screen, "Score"+":"+str(player.score), 28, 70, 20)
-    #draw_text(screen, "Lives"+":"+str(player.lives), 60, 100, 50)
+   
     pygame.display.flip()
 
 pygame.quit()    
